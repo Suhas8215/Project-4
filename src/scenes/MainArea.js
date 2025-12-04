@@ -1,3 +1,5 @@
+import { gameState } from '../GameState.js';
+
 export class MainArea extends Phaser.Scene {
 
     constructor() {
@@ -5,13 +7,9 @@ export class MainArea extends Phaser.Scene {
     }
 
     preload() {
-        //this.preloadConfig();
-        // Load the Tiled JSON map and the tileset image that the map references
         this.load.tilemapTiledJSON('MainArea', 'assets/maps/MainArea.tmj');
         this.load.image('TownTileset', 'assets/tilemap/tilemap_packed.png');
         
-        // Load Kenney Toon Character sprite sheets using TextureAtlas XML format
-        // These are atlas files, not grid spritesheets - each frame is 96x128 pixels
         this.load.atlasXML('player', 
             'assets/characters/kenney_toon-characters-1/Male adventurer/Tilesheet/character_maleAdventurer_sheet.png',
             'assets/characters/kenney_toon-characters-1/Male adventurer/Tilesheet/character_maleAdventurer_sheet.xml'
@@ -39,44 +37,29 @@ export class MainArea extends Phaser.Scene {
     }
 
     create() {
-        // Create the tilemap from the loaded JSON
         const map = this.make.tilemap({ key: 'MainArea' });
-
-        // The first argument ('tiles') must match the tileset name in Tiled
         const tileset = map.addTilesetImage('tiles', 'TownTileset');
 
-        // Layer names must exactly match the layer names in the Tiled map
         const backgroundLayer = map.createLayer('Background', tileset);
         const terrainLayer = map.createLayer('Terrain', tileset);
         const decorationsLayer = map.createLayer('Decorations', tileset);
 
-        // Scale the map to fill more of the screen
-        // Map is 35x15 tiles at 16px each = 560x240px
-        // Game canvas is 1280x720px, so scale by 2.5x to make it 1400x600px
+        // Scale map 2.5x (560x240px -> 1400x600px to fill screen)
         backgroundLayer.setScale(2.5);
         terrainLayer.setScale(2.5);
         decorationsLayer.setScale(2.5);
 
-        // Set up collision for terrain layer (walls/buildings)
         terrainLayer.setCollisionByProperty({ collides: true });
 
-        // Calculate scaled map dimensions
-        const mapWidth = map.widthInPixels * 2.5;
-        const mapHeight = map.heightInPixels * 2.5;
-
-        // Helper function to create a character sprite
-        // If spriteKey is provided, it will use that sprite image, otherwise creates a colored rectangle
+        this.mapWidth = map.widthInPixels * 2.5;
+        this.mapHeight = map.heightInPixels * 2.5;
         const createCharacter = (x, y, color, spriteKey = null) => {
             let sprite;
             
-            // If spriteKey is provided and the texture exists, use it
             if (spriteKey && this.textures.exists(spriteKey)) {
                 sprite = this.physics.add.sprite(x, y, spriteKey);
-                // Scale sprite to match map scale 
-                // Original sprite frames are 96x128, scale down to fit nicely (about 48x64 scaled)
                 sprite.setDisplaySize(48, 64);
             } else {
-                // Fallback: Create a colored rectangle
                 const graphics = this.add.graphics();
                 graphics.fillStyle(color, 1);
                 graphics.fillRect(0, 0, 32, 32);
@@ -86,60 +69,73 @@ export class MainArea extends Phaser.Scene {
                 sprite = this.physics.add.sprite(x, y, textureKey);
             }
             
-            // Set world bounds for all characters
             sprite.setCollideWorldBounds(true);
-            
-            // Disable gravity for all characters (top-down game)
             sprite.body.setGravityY(0);
             
             return sprite;
         };
 
-        // Create player character - positioned in center of map
-        this.player = createCharacter(mapWidth / 2, mapHeight / 2, 0x4a90e2, 'player');
-        this.player.setFrame('idle'); // Start with idle frame
+        this.player = createCharacter(this.mapWidth / 2, this.mapHeight / 2, 0x4a90e2, 'player');
+        this.player.setFrame('idle');
 
-        // Create NPCs - positioned within map bounds
         this.npcs = [];
         
-        // NPC 1 - Female person (near the house)
-        const npc1 = createCharacter(mapWidth * 0.4, mapHeight * 0.3, 0xe24a4a, 'npc1');
+        const npc1 = createCharacter(this.mapWidth * 0.4, this.mapHeight * 0.3, 0xe24a4a, 'npc1');
         npc1.setFrame('idle');
         npc1.name = 'NPC1';
         this.npcs.push(npc1);
 
-        // NPC 2 - Male person (near the castle)
-        const npc2 = createCharacter(mapWidth * 0.7, mapHeight * 0.6, 0x4ae24a, 'npc2');
+        const npc2 = createCharacter(this.mapWidth * 0.7, this.mapHeight * 0.6, 0x4ae24a, 'npc2');
         npc2.setFrame('idle');
         npc2.name = 'NPC2';
         this.npcs.push(npc2);
 
-        // NPC 3 - Robot (near the barn)
-        const npc3 = createCharacter(mapWidth * 0.15, mapHeight * 0.7, 0xe2e24a, 'npc3');
+        const npc3 = createCharacter(this.mapWidth * 0.15, this.mapHeight * 0.7, 0xe2e24a, 'npc3');
         npc3.setFrame('idle');
         npc3.name = 'NPC3';
         this.npcs.push(npc3);
 
-        // NPC 4 - Zombie
-        const npc4 = createCharacter(mapWidth * 0.6, mapHeight * 0.2, 0x9a4ae2, 'npc4');
+        const npc4 = createCharacter(this.mapWidth * 0.6, this.mapHeight * 0.2, 0x9a4ae2, 'npc4');
         npc4.setFrame('idle');
         npc4.name = 'NPC4';
         this.npcs.push(npc4);
 
-        // Set up camera to follow player
-        this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
+        this.cameras.main.setBounds(0, 0, this.mapWidth, this.mapHeight);
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setZoom(1);
         
-        // Set world bounds for physics
-        this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
+        this.physics.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
 
-        // Set up keyboard controls
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasdKeys = this.input.keyboard.addKeys('W,S,A,D');
+        this.interactKey = this.input.keyboard.addKey('E');
+        
+        this.gameState = gameState;
+        this.interactables = [];
+        this.coins = [];
+        this.messageText = null;
+        this.messageTimer = null;
+        
+        this.createUI();
+        this.createCoins();
+        
+        this.interactionZones = [
+            { x: this.mapWidth * 0.25, y: this.mapHeight * 0.3, type: 'house1', name: 'House 1' },
+            { x: this.mapWidth * 0.35, y: this.mapHeight * 0.7, type: 'house2', name: 'House 2' },
+            { x: this.mapWidth * 0.4, y: this.mapHeight * 0.75, type: 'house2', name: 'House 2' },
+            { x: this.mapWidth * 0.3, y: this.mapHeight * 0.7, type: 'house2', name: 'House 2' },
+            { x: this.mapWidth * 0.75, y: this.mapHeight * 0.65, type: 'castle', name: 'Castle' },
+            { x: this.mapWidth * 0.5, y: this.mapHeight * 0.45, type: 'well', name: 'Well' }
+        ];
+        
+        this.npcs.forEach(npc => {
+            npc.isInteractable = true;
+            npc.needsHealing = true;
+            npc.healed = false;
+            npc.interactionType = 'npc';
+            this.interactables.push(npc);
+        });
 
-        // Create walking animations for characters using the atlas frame names
-        // Based on the XML, walk frames are walk0-walk7, and we'll use 'down' for down, 'back' for up, 'side' for left/right
         this.anims.create({
             key: 'walk_down',
             frames: this.anims.generateFrameNames('player', {
@@ -172,30 +168,207 @@ export class MainArea extends Phaser.Scene {
             repeat: -1
         });
 
-        // Create idle animation
         this.anims.create({
             key: 'idle',
             frames: [{ key: 'player', frame: 'idle' }],
             frameRate: 1
         });
 
-        // Add collision between player and terrain
         this.physics.add.collider(this.player, terrainLayer);
         
-        // Add collision between NPCs and terrain
         this.npcs.forEach(npc => {
             this.physics.add.collider(npc, terrainLayer);
         });
+        
+        this.coins.forEach(coin => {
+            this.physics.add.overlap(this.player, coin, () => this.collectCoin(coin), null, this);
+        });
+    }
+    
+    createUI() {
+        this.coinText = this.add.text(16, 16, 'Coins: 0', {
+            fontSize: '24px',
+            fill: '#FFD700',
+            stroke: '#000',
+            strokeThickness: 4
+        });
+        this.coinText.setScrollFactor(0);
+        this.coinText.setDepth(1000);
+        
+        this.interactHint = this.add.text(16, 50, '', {
+            fontSize: '20px',
+            fill: '#FFFFFF',
+            stroke: '#000',
+            strokeThickness: 3
+        });
+        this.interactHint.setScrollFactor(0);
+        this.interactHint.setDepth(1000);
+        this.interactHint.setVisible(false);
+    }
+    
+    createCoins() {
+        const coinPositions = [
+            { x: this.mapWidth * 0.2, y: this.mapHeight * 0.2 },
+            { x: this.mapWidth * 0.3, y: this.mapHeight * 0.4 },
+            { x: this.mapWidth * 0.5, y: this.mapHeight * 0.15 },
+            { x: this.mapWidth * 0.7, y: this.mapHeight * 0.3 },
+            { x: this.mapWidth * 0.15, y: this.mapHeight * 0.6 },
+            { x: this.mapWidth * 0.4, y: this.mapHeight * 0.7 },
+            { x: this.mapWidth * 0.6, y: this.mapHeight * 0.5 },
+            { x: this.mapWidth * 0.8, y: this.mapHeight * 0.4 },
+            { x: this.mapWidth * 0.25, y: this.mapHeight * 0.5 },
+            { x: this.mapWidth * 0.75, y: this.mapHeight * 0.65 }
+        ];
+        
+        coinPositions.forEach((pos, index) => {
+            const graphics = this.add.graphics();
+            graphics.fillStyle(0xFFD700, 1);
+            graphics.fillCircle(10, 10, 10);
+            graphics.generateTexture('coin_' + index, 20, 20);
+            graphics.destroy();
+            
+            const coin = this.physics.add.sprite(pos.x, pos.y, 'coin_' + index);
+            coin.setDisplaySize(20, 20);
+            coin.body.setGravityY(0);
+            coin.body.setImmovable(true);
+            coin.body.setAllowGravity(false);
+            coin.setCollideWorldBounds(false);
+            coin.collected = false;
+            this.coins.push(coin);
+        });
+    }
+    
+    
+    collectCoin(coin) {
+        if (!coin.collected) {
+            coin.collected = true;
+            this.gameState.addCoins(1);
+            this.updateUI();
+            coin.destroy();
+            this.showMessage('Coin collected! Total: ' + this.gameState.coins);
+        }
+    }
+    
+    updateUI() {
+        this.coinText.setText('Coins: ' + this.gameState.coins);
+    }
+    
+    showMessage(text, duration = 2000) {
+        if (this.messageText) {
+            this.messageText.destroy();
+        }
+        if (this.messageTimer) {
+            clearTimeout(this.messageTimer);
+        }
+        
+        this.messageText = this.add.text(this.cameras.main.centerX, 100, text, {
+            fontSize: '32px',
+            fill: '#FFFFFF',
+            stroke: '#000',
+            strokeThickness: 4,
+            align: 'center'
+        });
+        this.messageText.setScrollFactor(0);
+        this.messageText.setDepth(1000);
+        this.messageText.setOrigin(0.5);
+        
+        this.messageTimer = setTimeout(() => {
+            if (this.messageText) {
+                this.messageText.destroy();
+                this.messageText = null;
+            }
+        }, duration);
+    }
+    
+    checkInteractions() {
+        const interactionRange = 200;
+        let nearestInteractable = null;
+        let nearestDistance = Infinity;
+        
+        this.interactionZones.forEach(zone => {
+            const distance = Phaser.Math.Distance.Between(
+                this.player.x, this.player.y,
+                zone.x, zone.y
+            );
+            
+            if (distance < interactionRange && distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestInteractable = zone;
+            }
+        });
+        
+        this.interactables.forEach(item => {
+            if (!item.active || item.interactionType !== 'npc') return;
+            
+            const distance = Phaser.Math.Distance.Between(
+                this.player.x, this.player.y,
+                item.x, item.y
+            );
+            
+            if (distance < interactionRange && distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestInteractable = item;
+            }
+        });
+        
+        if (nearestInteractable) {
+            let hintText = 'Press E to interact';
+            if (nearestInteractable.name) {
+                hintText = 'Press E to enter ' + nearestInteractable.name;
+            } else if (nearestInteractable.interactionType === 'npc') {
+                hintText = 'Press E to heal NPC';
+            }
+            this.interactHint.setText(hintText);
+            this.interactHint.setVisible(true);
+            this.interactHint.setPosition(this.cameras.main.centerX, 50);
+            this.interactHint.setOrigin(0.5);
+        } else {
+            this.interactHint.setVisible(false);
+        }
+        
+        if (Phaser.Input.Keyboard.JustDown(this.interactKey) && nearestInteractable) {
+            this.handleInteraction(nearestInteractable);
+        }
+    }
+    
+    handleInteraction(item) {
+        if (item.interactionType === 'well' || item.type === 'well') {
+            this.gameState.hasWater = true;
+            this.showMessage('Water collected!');
+        } else if (item.interactionType === 'npc' && item.needsHealing && !item.healed) {
+            if (this.gameState.hasPotion) {
+                item.healed = true;
+                this.gameState.npcsHealed++;
+                this.showMessage('NPC healed! (' + this.gameState.npcsHealed + '/' + this.gameState.totalNPCs + ')');
+                
+                if (this.gameState.allNPCsHealed()) {
+                    this.showMessage('All NPCs healed! Game Complete!', 5000);
+                }
+            } else {
+                this.showMessage('You need a potion to heal NPCs');
+            }
+        } else if (item.interactionType === 'house1' || item.type === 'house1') {
+            this.scene.start('HouseOne');
+        } else if (item.interactionType === 'house2' || item.type === 'house2') {
+            this.scene.start('HouseTwo');
+        } else if (item.interactionType === 'castle' || item.type === 'castle') {
+            if (this.gameState.canEnterCastle()) {
+                this.scene.start('Castle');
+            } else {
+                const keysNeeded = [];
+                if (!this.gameState.house1KeyObtained) keysNeeded.push('Key #1');
+                if (!this.gameState.house2KeyObtained) keysNeeded.push('Key #2');
+                this.showMessage('You need ' + keysNeeded.join(' and ') + ' to enter the castle!');
+            }
+        }
     }
 
     update() {
-        // Player movement
         const speed = 150;
         this.player.setVelocity(0);
         
         let isMoving = false;
 
-        // Arrow keys or WASD
         if (this.cursors.left.isDown || this.wasdKeys.A.isDown) {
             this.player.setVelocityX(-speed);
             this.player.anims.play('walk_left', true);
@@ -216,35 +389,50 @@ export class MainArea extends Phaser.Scene {
             isMoving = true;
         }
         
-        // Play idle animation when not moving
         if (!isMoving) {
             this.player.anims.play('idle', true);
         }
-
-        // Optional: Simple NPC movement (random wandering)
-        // You can remove this if you want to control NPCs manually
+        
+        this.checkInteractions();
+        
         this.npcs.forEach(npc => {
-            // Stop NPCs from falling due to gravity
-            npc.setVelocityY(0);
-            
-            // Random wandering movement
-            if (Phaser.Math.Between(0, 100) < 2) {
-                npc.setVelocity(
-                    Phaser.Math.Between(-50, 50),
-                    Phaser.Math.Between(-50, 50)
-                );
-            }
-            
-            // Gradually slow down NPCs if they're moving
-            if (npc.body.velocity.x !== 0 || npc.body.velocity.y !== 0) {
-                npc.body.velocity.x *= 0.95;
-                npc.body.velocity.y *= 0.95;
+            if (npc.healed) {
+                this.updateNPCPathfinding(npc);
+            } else {
+                npc.setVelocityY(0);
                 
-                // Stop if velocity is very small
-                if (Math.abs(npc.body.velocity.x) < 1) npc.setVelocityX(0);
-                if (Math.abs(npc.body.velocity.y) < 1) npc.setVelocityY(0);
+                if (Phaser.Math.Between(0, 100) < 2) {
+                    npc.setVelocity(
+                        Phaser.Math.Between(-50, 50),
+                        Phaser.Math.Between(-50, 50)
+                    );
+                }
+                
+                if (npc.body.velocity.x !== 0 || npc.body.velocity.y !== 0) {
+                    npc.body.velocity.x *= 0.95;
+                    npc.body.velocity.y *= 0.95;
+                    
+                    if (Math.abs(npc.body.velocity.x) < 1) npc.setVelocityX(0);
+                    if (Math.abs(npc.body.velocity.y) < 1) npc.setVelocityY(0);
+                }
             }
         });
+    }
+    
+    updateNPCPathfinding(npc) {
+        // Simple pathfinding: move towards target, pick new target when reached
+        if (!npc.targetX || !npc.targetY || 
+            Phaser.Math.Distance.Between(npc.x, npc.y, npc.targetX, npc.targetY) < 20) {
+            npc.targetX = Phaser.Math.Between(100, this.mapWidth - 100);
+            npc.targetY = Phaser.Math.Between(100, this.mapHeight - 100);
+        }
+        
+        const angle = Phaser.Math.Angle.Between(npc.x, npc.y, npc.targetX, npc.targetY);
+        const speed = 80;
+        npc.setVelocity(
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed
+        );
     }
 
 }
