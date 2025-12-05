@@ -7,7 +7,7 @@ export class Castle extends Phaser.Scene {
     }
 
     preload() {
-        this.load.tilemapTiledJSON('MainArea', 'assets/maps/MainArea.tmj');
+        this.load.tilemapTiledJSON('Castle', 'assets/maps/Castle.tmj');
         this.load.image('TownTileset', 'assets/tilemap/tilemap_packed.png');
         
         this.load.atlasXML('player', 
@@ -17,7 +17,16 @@ export class Castle extends Phaser.Scene {
     }
 
     create() {
-        this.add.rectangle(640, 360, 1280, 720, 0x2F2F2F);
+        const map = this.make.tilemap({ key: 'Castle' });
+        const tileset = map.addTilesetImage('tiles', 'TownTileset');
+
+        const backgroundLayer = map.createLayer('background', tileset);
+        const terrainLayer = map.createLayer('terrain', tileset);
+
+        backgroundLayer.setScale(2.5);
+        terrainLayer.setScale(2.5);
+
+        //this.add.rectangle(640, 360, 1280, 720, 0x2F2F2F);
         this.add.text(640, 100, 'Castle - Wizard\'s Tower', {
             fontSize: '48px',
             fill: '#FFFFFF'

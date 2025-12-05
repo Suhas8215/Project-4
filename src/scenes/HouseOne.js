@@ -7,7 +7,7 @@ export class HouseOne extends Phaser.Scene {
     }
 
     preload() {
-        this.load.tilemapTiledJSON('MainArea', 'assets/maps/MainArea.tmj');
+        this.load.tilemapTiledJSON('HouseOne', 'assets/maps/HouseTwo.tmj');
         this.load.image('TownTileset', 'assets/tilemap/tilemap_packed.png');
         
         this.load.atlasXML('player', 
@@ -17,7 +17,18 @@ export class HouseOne extends Phaser.Scene {
     }
 
     create() {
-        this.add.rectangle(640, 360, 1280, 720, 0x8B4513);
+        //this.add.rectangle(640, 360, 1280, 720, 0x8B4513);
+        const map = this.make.tilemap({ key: 'HouseOne' });
+        const tileset = map.addTilesetImage('tiles', 'TownTileset');
+
+        const backgroundLayer = map.createLayer('background', tileset);
+        const terrainLayer = map.createLayer('terrain', tileset);
+
+        backgroundLayer.setScale(2.5);
+        terrainLayer.setScale(2.5);
+
+        terrainLayer.setCollisionByProperty({ Collides: true });
+
         this.add.text(640, 100, 'House 1 - Animal Care', {
             fontSize: '48px',
             fill: '#FFFFFF'
@@ -28,6 +39,7 @@ export class HouseOne extends Phaser.Scene {
         this.player = this.physics.add.sprite(640, 360, 'player');
         this.player.setFrame('idle');
         this.player.setDisplaySize(48, 64);
+        this.physics.add.collider(this.player, terrainLayer);
         
         this.animals = [];
         const totalAnimals = 3;

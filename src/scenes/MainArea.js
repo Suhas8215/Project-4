@@ -49,7 +49,7 @@ export class MainArea extends Phaser.Scene {
         terrainLayer.setScale(2.5);
         decorationsLayer.setScale(2.5);
 
-        terrainLayer.setCollisionByProperty({ collides: true });
+        terrainLayer.setCollisionByProperty({ Collides: true });
 
         this.mapWidth = map.widthInPixels * 2.5;
         this.mapHeight = map.heightInPixels * 2.5;
@@ -77,6 +77,7 @@ export class MainArea extends Phaser.Scene {
 
         this.player = createCharacter(this.mapWidth / 2, this.mapHeight / 2, 0x4a90e2, 'player');
         this.player.setFrame('idle');
+        this.physics.add.collider(this.player, terrainLayer);
 
         this.npcs = [];
         

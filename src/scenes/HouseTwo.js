@@ -7,7 +7,7 @@ export class HouseTwo extends Phaser.Scene {
     }
 
     preload() {
-        this.load.tilemapTiledJSON('MainArea', 'assets/maps/MainArea.tmj');
+        this.load.tilemapTiledJSON('HouseTwo', 'assets/maps/HouseOne.tmj');
         this.load.image('TownTileset', 'assets/tilemap/tilemap_packed.png');
         
         this.load.atlasXML('player', 
@@ -17,7 +17,16 @@ export class HouseTwo extends Phaser.Scene {
     }
 
     create() {
-        this.add.rectangle(640, 360, 1280, 720, 0x8B4513);
+        const map = this.make.tilemap({ key: 'HouseTwo' });
+        const tileset = map.addTilesetImage('tiles', 'TownTileset');
+
+        const backgroundLayer = map.createLayer('background', tileset);
+        const terrainLayer = map.createLayer('terrain', tileset);
+
+        backgroundLayer.setScale(2.5);
+        terrainLayer.setScale(2.5);
+
+        //this.add.rectangle(640, 360, 1280, 720, 0x8B4513);
         this.add.text(640, 100, 'House 2 - Mystery Boxes', {
             fontSize: '48px',
             fill: '#FFFFFF'
