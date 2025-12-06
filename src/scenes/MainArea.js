@@ -117,6 +117,22 @@ export class MainArea extends Phaser.Scene {
         this.messageText = null;
         this.messageTimer = null;
         
+        if(this.gameState.firstLoad)
+        {
+            this.coinPositions = [
+                { x: this.mapWidth * 0.2, y: this.mapHeight * 0.2, collected: false },
+                { x: this.mapWidth * 0.3, y: this.mapHeight * 0.4, collected: false },
+                { x: this.mapWidth * 0.5, y: this.mapHeight * 0.15, collected: false },
+                { x: this.mapWidth * 0.7, y: this.mapHeight * 0.3, collected: false },
+                { x: this.mapWidth * 0.15, y: this.mapHeight * 0.55, collected: false },
+                { x: this.mapWidth * 0.4, y: this.mapHeight * 0.7, collected: false },
+                { x: this.mapWidth * 0.6, y: this.mapHeight * 0.5, collected: false },
+                { x: this.mapWidth * 0.8, y: this.mapHeight * 0.4, collected: false },
+                { x: this.mapWidth * 0.25, y: this.mapHeight * 0.5, collected: false },
+                { x: this.mapWidth * 0.75, y: this.mapHeight * 0.85, collected: false }
+            ];
+        }
+
         this.createUI();
         this.createCoins();
         
@@ -168,13 +184,13 @@ export class MainArea extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
-
+        
         this.anims.create({
             key: 'idle',
             frames: [{ key: 'player', frame: 'idle' }],
             frameRate: 1
         });
-
+        
         this.physics.add.collider(this.player, terrainLayer);
         
         this.npcs.forEach(npc => {
@@ -184,6 +200,8 @@ export class MainArea extends Phaser.Scene {
         this.coins.forEach(coin => {
             this.physics.add.overlap(this.player, coin, () => this.collectCoin(coin), null, this);
         });
+
+        this.gameState.loaded();
     }
     
     createUI() {
@@ -208,41 +226,33 @@ export class MainArea extends Phaser.Scene {
     }
     
     createCoins() {
-        const coinPositions = [
-            { x: this.mapWidth * 0.2, y: this.mapHeight * 0.2 },
-            { x: this.mapWidth * 0.3, y: this.mapHeight * 0.4 },
-            { x: this.mapWidth * 0.5, y: this.mapHeight * 0.15 },
-            { x: this.mapWidth * 0.7, y: this.mapHeight * 0.3 },
-            { x: this.mapWidth * 0.15, y: this.mapHeight * 0.6 },
-            { x: this.mapWidth * 0.4, y: this.mapHeight * 0.7 },
-            { x: this.mapWidth * 0.6, y: this.mapHeight * 0.5 },
-            { x: this.mapWidth * 0.8, y: this.mapHeight * 0.4 },
-            { x: this.mapWidth * 0.25, y: this.mapHeight * 0.5 },
-            { x: this.mapWidth * 0.75, y: this.mapHeight * 0.65 }
-        ];
         
-        coinPositions.forEach((pos, index) => {
-            const graphics = this.add.graphics();
-            graphics.fillStyle(0xFFD700, 1);
-            graphics.fillCircle(10, 10, 10);
-            graphics.generateTexture('coin_' + index, 20, 20);
-            graphics.destroy();
-            
-            const coin = this.physics.add.sprite(pos.x, pos.y, 'coin_' + index);
-            coin.setDisplaySize(20, 20);
-            coin.body.setGravityY(0);
-            coin.body.setImmovable(true);
-            coin.body.setAllowGravity(false);
-            coin.setCollideWorldBounds(false);
-            coin.collected = false;
-            this.coins.push(coin);
+        this.coinPositions.forEach((pos, index) => {
+            if (!pos.collected)
+            {
+                const graphics = this.add.graphics();
+                graphics.fillStyle(0xFFD700, 1);
+                graphics.fillCircle(10, 10, 10);
+                graphics.generateTexture('coin_' + index, 20, 20);
+                graphics.destroy();
+                
+                const coin = this.physics.add.sprite(pos.x, pos.y, 'coin_' + index);
+                this.physics.add.overlap(this.player, coin, () => this.collectCoin(coin, pos), null, this);
+                coin.setDisplaySize(20, 20);
+                coin.body.setGravityY(0);
+                coin.body.setImmovable(true);
+                coin.body.setAllowGravity(false);
+                coin.setCollideWorldBounds(false);
+                this.coins.push(coin);
+            }
         });
     }
     
     
-    collectCoin(coin) {
+    collectCoin(coin, pos) {
         if (!coin.collected) {
             coin.collected = true;
+            pos.collected = true;
             this.gameState.addCoins(1);
             this.updateUI();
             coin.destroy();
@@ -366,7 +376,7 @@ export class MainArea extends Phaser.Scene {
 
     update() {
         const speed = 150;
-        this.player.setVelocity(0);
+        this.player.setVelocity(0, 0);
         
         let isMoving = false;
 
@@ -400,7 +410,7 @@ export class MainArea extends Phaser.Scene {
             if (npc.healed) {
                 this.updateNPCPathfinding(npc);
             } else {
-                npc.setVelocityY(0);
+                npc.setVelocityY(0, 0);
                 
                 if (Phaser.Math.Between(0, 100) < 2) {
                     npc.setVelocity(
