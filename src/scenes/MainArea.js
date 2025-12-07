@@ -81,17 +81,17 @@ export class MainArea extends Phaser.Scene {
 
         this.npcs = [];
         
-        const npc1 = createCharacter(this.mapWidth * 0.4, this.mapHeight * 0.3, 0xe24a4a, 'npc1');
+        const npc1 = createCharacter(this.mapWidth * 0.4, this.mapHeight * 0.5, 0xe24a4a, 'npc1');
         npc1.setFrame('idle');
         npc1.name = 'NPC1';
         this.npcs.push(npc1);
 
-        const npc2 = createCharacter(this.mapWidth * 0.7, this.mapHeight * 0.6, 0x4ae24a, 'npc2');
+        const npc2 = createCharacter(this.mapWidth * 0.6, this.mapHeight * 0.6, 0x4ae24a, 'npc2');
         npc2.setFrame('idle');
         npc2.name = 'NPC2';
         this.npcs.push(npc2);
 
-        const npc3 = createCharacter(this.mapWidth * 0.15, this.mapHeight * 0.7, 0xe2e24a, 'npc3');
+        const npc3 = createCharacter(this.mapWidth * 0.15, this.mapHeight * 0.85, 0xe2e24a, 'npc3');
         npc3.setFrame('idle');
         npc3.name = 'NPC3';
         this.npcs.push(npc3);
@@ -130,16 +130,15 @@ export class MainArea extends Phaser.Scene {
                 { x: this.mapWidth * 0.8, y: this.mapHeight * 0.4, collected: false },
                 { x: this.mapWidth * 0.25, y: this.mapHeight * 0.5, collected: false },
                 { x: this.mapWidth * 0.75, y: this.mapHeight * 0.85, collected: false }
-            ];
+            ]; 
         }
 
         this.createUI();
         this.createCoins();
         
         this.interactionZones = [
-            { x: this.mapWidth * 0.25, y: this.mapHeight * 0.3, type: 'house1', name: 'House 1' },
-            { x: this.mapWidth * 0.35, y: this.mapHeight * 0.7, type: 'house2', name: 'House 2' },
-            { x: this.mapWidth * 0.4, y: this.mapHeight * 0.75, type: 'house2', name: 'House 2' },
+            { x: this.mapWidth * 0.4, y: this.mapHeight * 0.4, type: 'house1', name: 'House 1' },
+            { x: this.mapWidth * 0.25, y: this.mapHeight * 0.75, type: 'house2', name: 'House 2' },
             { x: this.mapWidth * 0.3, y: this.mapHeight * 0.7, type: 'house2', name: 'House 2' },
             { x: this.mapWidth * 0.75, y: this.mapHeight * 0.65, type: 'castle', name: 'Castle' },
             { x: this.mapWidth * 0.5, y: this.mapHeight * 0.45, type: 'well', name: 'Well' }
@@ -292,7 +291,7 @@ export class MainArea extends Phaser.Scene {
     }
     
     checkInteractions() {
-        const interactionRange = 200;
+        const interactionRange = 100;
         let nearestInteractable = null;
         let nearestDistance = Infinity;
         
@@ -324,9 +323,9 @@ export class MainArea extends Phaser.Scene {
         
         if (nearestInteractable) {
             let hintText = 'Press E to interact';
-            if (nearestInteractable.name) {
+            if (nearestInteractable.name && nearestInteractable.interactionType !== 'npc') {
                 hintText = 'Press E to enter ' + nearestInteractable.name;
-            } else if (nearestInteractable.interactionType === 'npc') {
+            } else if (nearestInteractable.interactionType === 'npc' && this.gameState.hasPotion) {
                 hintText = 'Press E to heal NPC';
             }
             this.interactHint.setText(hintText);
