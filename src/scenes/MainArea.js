@@ -262,7 +262,7 @@ export class MainArea extends Phaser.Scene {
         this.coinText.setText('Coins: ' + this.gameState.coins);
     }
     
-    showMessage(text, duration = 2000) {
+    showMessage(text, duration = 2000, color = '#FFFFFF', size = '32px') {
         if (this.messageText) {
             this.messageText.destroy();
         }
@@ -271,8 +271,8 @@ export class MainArea extends Phaser.Scene {
         }
         
         this.messageText = this.add.text(this.cameras.main.centerX, 100, text, {
-            fontSize: '32px',
-            fill: '#FFFFFF',
+            fontSize: size,
+            fill: color,
             stroke: '#000',
             strokeThickness: 4,
             align: 'center'
@@ -356,7 +356,7 @@ export class MainArea extends Phaser.Scene {
                 this.showMessage('NPC healed! (' + this.gameState.npcsHealed + '/' + this.gameState.totalNPCs + ')');
                 
                 if (this.gameState.allNPCsHealed()) {
-                    this.showMessage('All NPCs healed! Game Complete!', 5000);
+                    this.showMessage('All NPCs healed! Game Complete!', 10000, '#fff200ff', '40px');
                 }
             } else {
                 this.showMessage('You need a potion to heal NPCs');
@@ -412,8 +412,10 @@ export class MainArea extends Phaser.Scene {
         this.npcs.forEach(npc => {
             if (npc.healed) {
                 this.updateNPCPathfinding(npc);
+                npc.setTint(0xFFFFFF);
             } else {
                 npc.setVelocity(0, 0);
+                npc.setTint(0x4D9E50);
                 
                 if (Phaser.Math.Between(0, 100) < 2) {
                     npc.setVelocity(
