@@ -13,6 +13,7 @@ export class GameState {
         this.npcsHealed = 0;
         this.totalNPCs = 4;
         this.firstLoad = true;
+        this.hasBucket = false;
         
         // House 1 animal states (persist across scene changes)
         this.house1AnimalsFed = 0;

@@ -10,6 +10,7 @@ export class HouseTwo extends Phaser.Scene {
         this.load.tilemapTiledJSON('HouseTwo', 'assets/maps/HouseOne.tmj');
         this.load.image('TownTileset', 'assets/tilemap/tilemap_packed.png');
         this.load.image('box_', 'assets/sprites/chest.png');
+        this.load.spritesheet('tilesheet', 'assets/tilemap/tilemap_packed.png', { frameWidth: 16, frameHeight: 16, spacing: 0 } );
         
         this.load.atlasXML('player', 
             'assets/characters/kenney_toon-characters-1/Male adventurer/Tilesheet/character_maleAdventurer_sheet.png',
@@ -24,9 +25,15 @@ export class HouseTwo extends Phaser.Scene {
         const backgroundLayer = map.createLayer('background', tileset);
         const terrainLayer = map.createLayer('terrain', tileset);
 
+        const bucketLayer = map.getObjectLayer('bucket', tileset).objects;
+
         backgroundLayer.setScale(2.5);
         terrainLayer.setScale(2.5);
+        //bucketLayer.setScale(2.5);
 
+        this.buckets_g = this.physics.add.group();
+        this.createBuckets(bucketLayer);
+        
         //this.add.rectangle(640, 360, 1280, 720, 0x8B4513);
         this.add.text(640, 100, 'House 2 - Mystery Boxes', {
             fontSize: '48px',
@@ -39,6 +46,8 @@ export class HouseTwo extends Phaser.Scene {
         this.player.setFrame('idle');
         this.player.setDisplaySize(48, 64);
         
+        this.physics.add.overlap(this.player, this.buckets_g, (p, b) => { console.log("Bucket collected"); b.destroy(); this.gameState.hasBucket = true; this.showMessage('You picked up a bucket!'); }, null, this);
+
         if (!this.gameState.house2BoxesOpened) {
             this.gameState.house2BoxesOpened = [false, false, false];
         }
@@ -188,5 +197,19 @@ export class HouseTwo extends Phaser.Scene {
                 this.messageText = null;
             }
         }, duration);
+    }
+
+    createBuckets(buckets) {
+        const scale = 2.5;
+        for (let b of buckets) {
+            let bucket = this.physics.add.sprite((b.x + b.width / 2) * scale, (b.y - b.height / 2) * scale, 'tilesheet', 130);
+            bucket.setScale(scale);
+            this.buckets_g.add(bucket);
+        }
+        for (let i = 0; i < this.buckets_g.getChildren().length; i++) {
+            let bucket = this.buckets_g.getChildren()[i];
+            bucket.body.allowGravity = false;
+            bucket.setImmovable(true);
+        }
     }
 }

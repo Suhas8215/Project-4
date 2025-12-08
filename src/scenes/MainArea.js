@@ -342,8 +342,13 @@ export class MainArea extends Phaser.Scene {
     
     handleInteraction(item) {
         if (item.interactionType === 'well' || item.type === 'well') {
-            this.gameState.hasWater = true;
-            this.showMessage('Water collected!');
+            if(this.gameState.hasBucket)
+            {
+                this.gameState.hasWater = true;
+                this.showMessage('Water collected!');
+            } else {
+                this.showMessage('You need a bucket to collect water');
+            }
         } else if (item.interactionType === 'npc' && item.needsHealing && !item.healed) {
             if (this.gameState.hasPotion) {
                 item.healed = true;
