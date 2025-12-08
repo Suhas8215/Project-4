@@ -9,6 +9,7 @@ export class Castle extends Phaser.Scene {
     preload() {
         this.load.tilemapTiledJSON('Castle', 'assets/maps/Castle.tmj');
         this.load.image('TownTileset', 'assets/tilemap/tilemap_packed.png');
+        this.load.image('wizard', 'assets/sprites/wizard.png');
         
         this.load.atlasXML('player', 
             'assets/characters/kenney_toon-characters-1/Male adventurer/Tilesheet/character_maleAdventurer_sheet.png',
@@ -38,13 +39,13 @@ export class Castle extends Phaser.Scene {
         this.player.setFrame('idle');
         this.player.setDisplaySize(48, 64);
         
-        const wizardGraphics = this.add.graphics();
-        wizardGraphics.fillStyle(0x800080, 1);
-        wizardGraphics.fillRect(0, 0, 60, 60);
-        wizardGraphics.fillStyle(0xFFFF00, 1);
-        wizardGraphics.fillCircle(30, 20, 15);
-        wizardGraphics.generateTexture('wizard', 60, 60);
-        wizardGraphics.destroy();
+        // const wizardGraphics = this.add.graphics();
+        // wizardGraphics.fillStyle(0x800080, 1);
+        // wizardGraphics.fillRect(0, 0, 60, 60);
+        // wizardGraphics.fillStyle(0xFFFF00, 1);
+        // wizardGraphics.fillCircle(30, 20, 15);
+        // wizardGraphics.generateTexture('wizard', 60, 60);
+        // wizardGraphics.destroy();
         
         this.wizard = this.physics.add.sprite(640, 500, 'wizard');
         this.wizard.setDisplaySize(60, 60);

@@ -7,8 +7,9 @@ export class HouseTwo extends Phaser.Scene {
     }
 
     preload() {
-        this.load.tilemapTiledJSON('HouseTwo', 'assets/maps/HouseTwo.tmj');
+        this.load.tilemapTiledJSON('HouseTwo', 'assets/maps/HouseOne.tmj');
         this.load.image('TownTileset', 'assets/tilemap/tilemap_packed.png');
+        this.load.image('box_', 'assets/sprites/chest.png');
         
         this.load.atlasXML('player', 
             'assets/characters/kenney_toon-characters-1/Male adventurer/Tilesheet/character_maleAdventurer_sheet.png',
@@ -55,16 +56,16 @@ export class HouseTwo extends Phaser.Scene {
         const boxPositions = [400, 640, 880];
         
         for (let i = 0; i < 3; i++) {
-            const graphics = this.add.graphics();
-            graphics.fillStyle(0x8B4513, 1);
-            graphics.fillRect(0, 0, 80, 60);
-            graphics.fillStyle(0xFFD700, 1);
-            graphics.fillRect(20, 10, 40, 10);
-            graphics.generateTexture('box_' + i, 80, 60);
-            graphics.destroy();
+            // const graphics = this.add.graphics();
+            // graphics.fillStyle(0x8B4513, 1);
+            // graphics.fillRect(0, 0, 80, 60);
+            // graphics.fillStyle(0xFFD700, 1);
+            // graphics.fillRect(20, 10, 40, 10);
+            // graphics.generateTexture('box_' + i, 80, 60);
+            // graphics.destroy();
             
-            const box = this.physics.add.sprite(boxPositions[i], 500, 'box_' + i);
-            box.setDisplaySize(80, 60);
+            const box = this.physics.add.sprite(boxPositions[i], 500, 'box_');
+            box.setDisplaySize(100, 80);
             box.body.setGravityY(0);
             box.body.setImmovable(true);
             box.body.setAllowGravity(false);

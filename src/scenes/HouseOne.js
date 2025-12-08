@@ -7,7 +7,7 @@ export class HouseOne extends Phaser.Scene {
     }
 
     preload() {
-        this.load.tilemapTiledJSON('HouseOne', 'assets/maps/HouseOne.tmj');
+        this.load.tilemapTiledJSON('HouseOne', 'assets/maps/HouseTwo.tmj');
         this.load.image('TownTileset', 'assets/tilemap/tilemap_packed.png');
         
         this.load.atlasXML('player', 
