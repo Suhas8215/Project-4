@@ -119,7 +119,7 @@ export class MainArea extends Phaser.Scene {
         
         if(this.gameState.firstLoad)
         {
-            this.coinPositions = [
+            this.gameState.coinPositions = [
                 { x: this.mapWidth * 0.2, y: this.mapHeight * 0.2, collected: false },
                 { x: this.mapWidth * 0.3, y: this.mapHeight * 0.4, collected: false },
                 { x: this.mapWidth * 0.5, y: this.mapHeight * 0.15, collected: false },
@@ -225,8 +225,7 @@ export class MainArea extends Phaser.Scene {
     }
     
     createCoins() {
-        
-        this.coinPositions.forEach((pos, index) => {
+        this.gameState.coinPositions.forEach((pos, index) => {
             if (!pos.collected)
             {
                 const graphics = this.add.graphics();
@@ -409,7 +408,7 @@ export class MainArea extends Phaser.Scene {
             if (npc.healed) {
                 this.updateNPCPathfinding(npc);
             } else {
-                npc.setVelocityY(0, 0);
+                npc.setVelocity(0, 0);
                 
                 if (Phaser.Math.Between(0, 100) < 2) {
                     npc.setVelocity(
@@ -430,15 +429,44 @@ export class MainArea extends Phaser.Scene {
     }
     
     updateNPCPathfinding(npc) {
-        // Simple pathfinding: move towards target, pick new target when reached
-        if (!npc.targetX || !npc.targetY || 
-            Phaser.Math.Distance.Between(npc.x, npc.y, npc.targetX, npc.targetY) < 20) {
+        const distanceToTarget = npc.targetX && npc.targetY ? 
+            Phaser.Math.Distance.Between(npc.x, npc.y, npc.targetX, npc.targetY) : Infinity;
+        
+        if (!npc.targetX || !npc.targetY || distanceToTarget < 30) {
             npc.targetX = Phaser.Math.Between(100, this.mapWidth - 100);
             npc.targetY = Phaser.Math.Between(100, this.mapHeight - 100);
+            npc.lastPositionX = npc.x;
+            npc.lastPositionY = npc.y;
+            npc.stuckTimer = 0;
         }
         
+        if (!npc.lastPositionX) {
+            npc.lastPositionX = npc.x;
+            npc.lastPositionY = npc.y;
+            npc.stuckTimer = 0;
+        }
+        
+        const movedDistance = Phaser.Math.Distance.Between(
+            npc.lastPositionX, npc.lastPositionY,
+            npc.x, npc.y
+        );
+        
+        if (movedDistance < 5) {
+            npc.stuckTimer = (npc.stuckTimer || 0) + 1;
+            if (npc.stuckTimer > 30) {
+                npc.targetX = Phaser.Math.Between(100, this.mapWidth - 100);
+                npc.targetY = Phaser.Math.Between(100, this.mapHeight - 100);
+                npc.stuckTimer = 0;
+            }
+        } else {
+            npc.stuckTimer = 0;
+        }
+        
+        npc.lastPositionX = npc.x;
+        npc.lastPositionY = npc.y;
+        
         const angle = Phaser.Math.Angle.Between(npc.x, npc.y, npc.targetX, npc.targetY);
-        const speed = 80;
+        const speed = 100;
         npc.setVelocity(
             Math.cos(angle) * speed,
             Math.sin(angle) * speed

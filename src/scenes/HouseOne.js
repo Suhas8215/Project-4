@@ -7,7 +7,7 @@ export class HouseOne extends Phaser.Scene {
     }
 
     preload() {
-        this.load.tilemapTiledJSON('HouseOne', 'assets/maps/HouseTwo.tmj');
+        this.load.tilemapTiledJSON('HouseOne', 'assets/maps/HouseOne.tmj');
         this.load.image('TownTileset', 'assets/tilemap/tilemap_packed.png');
         
         this.load.atlasXML('player', 
@@ -45,35 +45,75 @@ export class HouseOne extends Phaser.Scene {
         const totalAnimals = 3;
         
         // Initialize animal states from gameState (persists across scene changes)
-        if (!this.gameState.house1AnimalStates) {
-            this.gameState.house1AnimalStates = [false, false, false];
-        }
         if (!this.gameState.house1WateredStates) {
             this.gameState.house1WateredStates = [false, false, false];
         }
         
+        const animalPositions = [
+            { x: 500, y: 500 },
+            { x: 640, y: 500 },
+            { x: 780, y: 500 }
+        ];
+        
         for (let i = 0; i < totalAnimals; i++) {
+            const size = 96;
             const graphics = this.add.graphics();
-            graphics.fillStyle(0xFFA500, 1);
-            graphics.fillRect(0, 0, 40, 40);
-            graphics.generateTexture('animal_' + i, 40, 40);
+            const centerX = size / 2;
+            const centerY = size / 2;
+            
+            const animalColors = [
+                { body: 0xD2691E, eyes: 0x000000, nose: 0xFF6347 },
+                { body: 0x8B4513, eyes: 0x000000, nose: 0xFF6347 },
+                { body: 0xCD853F, eyes: 0x000000, nose: 0xFF6347 }
+            ];
+            const colors = animalColors[i] || animalColors[0];
+            
+            graphics.fillStyle(colors.body, 1);
+            graphics.fillEllipse(centerX, centerY + 10, 50, 40);
+            
+            graphics.fillStyle(colors.body, 1);
+            graphics.fillCircle(centerX, centerY - 15, 25);
+            
+            graphics.fillStyle(0xFFFFFF, 1);
+            graphics.fillCircle(centerX - 10, centerY - 20, 8);
+            graphics.fillCircle(centerX + 10, centerY - 20, 8);
+            
+            graphics.fillStyle(colors.eyes, 1);
+            graphics.fillCircle(centerX - 10, centerY - 20, 5);
+            graphics.fillCircle(centerX + 10, centerY - 20, 5);
+            
+            graphics.fillStyle(colors.nose, 1);
+            graphics.fillEllipse(centerX, centerY - 8, 12, 8);
+            
+            graphics.fillStyle(colors.body, 1);
+            graphics.fillEllipse(centerX - 20, centerY + 5, 12, 20);
+            graphics.fillEllipse(centerX + 20, centerY + 5, 12, 20);
+            
+            graphics.fillStyle(0x000000, 1);
+            graphics.fillRect(centerX - 2, centerY - 5, 4, 2);
+            
+            graphics.generateTexture('animal_' + i, size, size);
             graphics.destroy();
             
-            const animal = this.physics.add.sprite(400 + i * 200, 500, 'animal_' + i);
-            animal.setDisplaySize(40, 40);
+            const animal = this.physics.add.sprite(animalPositions[i].x, animalPositions[i].y, 'animal_' + i);
+            animal.setDisplaySize(size, size);
             animal.body.setGravityY(0);
             animal.body.setImmovable(true);
             animal.body.setAllowGravity(false);
-            animal.fed = this.gameState.house1AnimalStates[i] || false;
+            animal.setOrigin(0.5, 0.5);
             animal.watered = this.gameState.house1WateredStates[i] || false;
             animal.index = i;
+            
+            if (animal.watered) {
+                animal.setTint(0x90EE90);
+            }
+            
             this.animals.push(animal);
         }
         
-        this.animalsFed = this.gameState.house1AnimalsFed || 0;
         this.animalsWatered = this.gameState.house1AnimalsWatered || 0;
         
-        this.add.text(640, 200, 'Feed and water all animals (Press E near them)', {
+        this.add.text(640, 200, 'Water all animals (Press E near them)', {
             fontSize: '24px',
             fill: '#FFFFFF'
         }).setOrigin(0.5);
@@ -122,19 +162,14 @@ export class HouseOne extends Phaser.Scene {
                 );
                 
                 if (distance < 60) {
-                    if (!animal.fed) {
-                        animal.fed = true;
-                        this.gameState.house1AnimalStates[animal.index] = true;
-                        this.animalsFed++;
-                        this.gameState.house1AnimalsFed = this.animalsFed;
-                        this.showMessage('Animal fed! (' + this.animalsFed + '/' + this.animals.length + ')');
-                    } else if (!animal.watered) {
+                    if (!animal.watered) {
                         // Water only consumed once for all animals
                         if (this.gameState.hasWater || this.gameState.house1WaterUsed) {
                             animal.watered = true;
                             this.gameState.house1WateredStates[animal.index] = true;
                             this.animalsWatered++;
                             this.gameState.house1AnimalsWatered = this.animalsWatered;
+                            animal.setTint(0x90EE90);
                             this.showMessage('Animal watered! (' + this.animalsWatered + '/' + this.animals.length + ')');
                             
                             if (!this.gameState.house1WaterUsed && this.gameState.hasWater) {
@@ -146,18 +181,17 @@ export class HouseOne extends Phaser.Scene {
                             return;
                         }
                     } else {
-                        this.showMessage('This animal is already cared for!');
+                        this.showMessage('This animal is already watered!');
                         return;
                     }
                 }
             });
             
-            if (this.animalsFed === this.animals.length && 
-                this.animalsWatered === this.animals.length &&
+            if (this.animalsWatered === this.animals.length &&
                 !this.gameState.house1KeyObtained) {
                 this.gameState.house1KeyObtained = true;
                 this.gameState.house1Completed = true;
-                this.showMessage('All animals cared for! You got KEY #1!', 4000);
+                this.showMessage('All animals watered! You got KEY #1!', 4000);
             }
         }
     }

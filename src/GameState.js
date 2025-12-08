@@ -25,19 +25,7 @@ export class GameState {
         this.house2BoxesOpened = [false, false, false];
         this.house2BoxesWithKeys = [];
         this.house2Attempts = 0;
-
-        // this.coinPositions = [
-        //     { x: this.mapWidth * 0.2, y: this.mapHeight * 0.2, collected: false },
-        //     { x: this.mapWidth * 0.3, y: this.mapHeight * 0.4, collected: false },
-        //     { x: this.mapWidth * 0.5, y: this.mapHeight * 0.15, collected: false },
-        //     { x: this.mapWidth * 0.7, y: this.mapHeight * 0.3, collected: false },
-        //     { x: this.mapWidth * 0.15, y: this.mapHeight * 0.6, collected: false },
-        //     { x: this.mapWidth * 0.4, y: this.mapHeight * 0.7, collected: false },
-        //     { x: this.mapWidth * 0.6, y: this.mapHeight * 0.5, collected: false },
-        //     { x: this.mapWidth * 0.8, y: this.mapHeight * 0.4, collected: false },
-        //     { x: this.mapWidth * 0.25, y: this.mapHeight * 0.5, collected: false },
-        //     { x: this.mapWidth * 0.75, y: this.mapHeight * 0.65, collected: false }
-        // ];
+        this.coinPositions = [];
     }
 
     addCoins(amount) {
@@ -80,6 +68,7 @@ export class GameState {
         this.house2BoxesWithKeys = [];
         this.house2Attempts = 0;
         this.firstLoad = true;
+        this.coinPositions = [];
     }
 
     allNPCsHealed() {
